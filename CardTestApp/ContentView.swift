@@ -27,19 +27,19 @@ struct ContentView: View
 		"sun.max.fill",
 		"rainbow",
 	]
-	let values = Array( 1...20 )
+	let values = Array( 0...17 )
 	
 	var body: some View
 	{
 		let spacing = 5.0
 		VStack(spacing:spacing)
 		{
-			ForEach(0..<6, id:\.self)
+			ForEach(0..<7, id:\.self)
 			{
 				cardRow in
 				HStack(spacing:spacing)
 				{
-					ForEach(0..<15, id:\.self)
+					ForEach(0..<25, id:\.self)
 					{
 						_ in
 						let suit = suits.randomElement() ?? suits[0]

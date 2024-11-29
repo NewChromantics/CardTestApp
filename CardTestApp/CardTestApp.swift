@@ -8,11 +8,15 @@
 import SwiftUI
 
 @main
-struct CardTestAppApp: App {
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
+struct CardTestApp: App
+{
+	var body: some Scene
+	{
+		WindowGroup
+		{
+			ContentView()
 				.frame(minWidth: 0,minHeight: 0)
-        }
-    }
+		}
+	}
 }
+

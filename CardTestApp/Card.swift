@@ -284,7 +284,7 @@ struct Card : View
 	var suitColour : Color { customSuitColour ?? defaultSuitColour ?? Color.blue }
 	var customSuitColour : Color?
 	var defaultSuitColour : Color? { Card.Suit.GetDefaultColourFor(suit: suit) }
-	var paperColour = Color.white
+	var paperColour = Color("Paper")
 	var paperEdgeColour = Color.gray //: Color { paperColour }
 	
 	let width = 90.0
