@@ -33,7 +33,11 @@ struct IconStack<Content: View>: View
 		//	<4 all in center
 		//	other wise edge and remainder in middle
 		let columnRows : [Int] = {
-			if iconCount < 4
+			if iconCount == 1
+			{
+				return [1]
+			}
+			else if iconCount < 4
 			{
 				return [0,iconCount,0]
 			}
@@ -233,29 +237,24 @@ struct CardMeta : Hashable
 	}
 }
 
+#if !canImport(UIKit)
+typealias UIColor = NSColor
+#endif
+
 //	add extensions to this...
 //	does it need to be an enum?
 extension Card.Suit
 {
 	static func GetDefaultColourFor(suit:String) -> Color?
 	{
-		//	can we extend this?
-		//	can we change this per theme?
-		switch suit
+		if let assetColour = UIColor(named:suit)
 		{
-			case Card.Suit.heart:	return Color.red
-			case Card.Suit.diamond:	return Color.red
-			case Card.Suit.spade:	return Color.black
-			case Card.Suit.club:	return Color.black
-			case "sun.max.fill":		return Color.yellow
-			case "leaf.fill":		return Color.green
-			case "star.fill":	return Color.yellow
-			case "clipboard.fill":	return Color.purple
-			case "moon.fill":	return Color.yellow
-			default:	return nil
+			return Color(assetColour)
 		}
+		return nil
 	}
 }
+
 
 
 struct Card : View
@@ -310,12 +309,17 @@ struct Card : View
 	var depth : CGFloat { max(minz,z)	}
 	var shadowOffset : CGFloat { depth * 1.5 }
 	
+	@ViewBuilder
 	var pipView : some View
 	{
+		//	special case :)
+		let multiColour = suit == "rainbow"
+		
 		pip
 			.resizable()
 			.scaledToFit()
 			.foregroundStyle(suitColour/*, accentColour*/)
+			.symbolRenderingMode( multiColour ? .multicolor : .monochrome )
 	}
 	
 	var cornerPipView : some View
@@ -419,15 +423,15 @@ struct InteractiveCard : View
 			CardMeta(value:1,suit: "bolt.fill"),
 			CardMeta(value:2,suit: Card.Suit.spade),
 			CardMeta(value:3,suit: Card.Suit.diamond),
-			CardMeta(value:4,suit: "moon.fill"),
+			CardMeta(value:1,suit: "moon.fill"),
 			CardMeta(value:5,suit: "star.fill"),
-			CardMeta(value:6,suit: Card.Suit.spade),
+			CardMeta(value:6,suit: Card.Suit.club),
 		],
 		[
 			CardMeta(value:7,suit: Card.Suit.club),
 			CardMeta(value:8,suit: "arrowshape.left.fill"),
 			CardMeta(value:9,suit: Card.Suit.heart),
-			CardMeta(value:.queen,suit: Card.Suit.spade),
+			CardMeta(value:.queen,suit: "baseball.fill"),
 			CardMeta(value:.jack,suit: "clipboard.fill"),
 			CardMeta(value:13,suit: "leaf.fill"),
 		//CardMeta("TH")
@@ -438,7 +442,7 @@ struct InteractiveCard : View
 			CardMeta(value:16,suit: "powerplug.portrait.fill"),
 			CardMeta(value:3,suit: "sun.max.fill"),
 			CardMeta(value:20,suit: "rainbow"),
-			CardMeta(value:4,suit: "rainbow"),
+			CardMeta(value:1,suit: "rainbow"),
 		]
 	]
 	
