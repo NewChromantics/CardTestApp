@@ -9,31 +9,50 @@ import SwiftUI
 
 struct ContentView: View
 {
-	let cards = [
-		CardMeta(value:2,suit: Card.Suit.heart),
-		CardMeta(value:3,suit: Card.Suit.diamond),
-		CardMeta(value:5,suit: Card.Suit.spade),
-		CardMeta(value:7,suit: Card.Suit.club),
-		CardMeta(value:.jack,suit: Card.Suit.spade),
-		CardMeta(value:.queen,suit: Card.Suit.spade),
-		CardMeta(value:.king,suit: Card.Suit.spade),
-		CardMeta(value:.ace,suit: Card.Suit.spade),
-		CardMeta("TH"),
-		CardMeta("1D"),
-		CardMeta("5S"),
-		CardMeta("QC"),
+	let suits =
+	[
+		Card.Suit.club,
+		Card.Suit.spade,
+		Card.Suit.diamond,
+		Card.Suit.heart,
+		"bolt.fill",
+		"moon.fill",
+		"star.fill",
+		"arrowshape.left.fill",
+		"baseball.fill",
+		"clipboard.fill",
+		"leaf.fill",
+		"cloud.drizzle.fill",
+		"powerplug.portrait.fill",
+		"sun.max.fill",
+		"rainbow",
 	]
-
+	let values = Array( 1...20 )
+	
 	var body: some View
 	{
-		HStack
+		let spacing = 5.0
+		VStack(spacing:spacing)
 		{
-			ForEach(cards, id:\.self)
+			ForEach(0..<6, id:\.self)
 			{
-				cardValue in
-				Card(cardMeta: cardValue)
+				cardRow in
+				HStack(spacing:spacing)
+				{
+					ForEach(0..<15, id:\.self)
+					{
+						_ in
+						let suit = suits.randomElement() ?? suits[0]
+						let value = values.randomElement() ?? values[0]
+						let cardValue = CardMeta(value,suit)
+						InteractiveCard(cardMeta: cardValue)
+					}
+				}
 			}
 		}
+		.frame(maxWidth: .infinity,maxHeight: .infinity)
+		.padding(50)
+		.background(Color("Felt"))
 	}
 }
 

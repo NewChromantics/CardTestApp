@@ -114,7 +114,8 @@ extension CardValue : ExpressibleByIntegerLiteral
 	}
 }
 
-extension CardValue : CustomStringConvertible
+//	we can't use CustomStringConvertible, but we can just override .description
+extension CardValue //: CustomStringConvertible
 {
 	var description: String
 	{
@@ -290,7 +291,7 @@ struct Card : View
 	let heightRatio = 1.4//1.4 is real card
 	var height : CGFloat {	width * heightRatio	}
 	var cornerRadius : CGFloat { width * 0.09 }
-	var paperBorder : CGFloat { width * 0.06 }
+	var paperBorder : CGFloat { width * 0.05 }
 	var borderWidth : CGFloat { 0.5 }
 	var pipMinWidth : CGFloat { 10 }
 	var pipWidth : CGFloat { max( pipMinWidth, width * 0.10) }
@@ -302,7 +303,7 @@ struct Card : View
 	var innerBorderCornerRadius : CGFloat { width * 0.05 }
 	//var innerBorderColour : Color { Color.blue }
 	var innerBorderColour : Color { Color.clear }
-	var innerBorderPadding : CGFloat = 3
+	var innerBorderPadding : CGFloat = 4
 
 	var z : CGFloat = 4
 	var minz = 1.5
@@ -329,7 +330,7 @@ struct Card : View
 		{
 			VStack(alignment:.center, spacing:0)
 			{
-				Text( "\(value)" )
+				Text( value.description )
 					.foregroundStyle(suitColour, paperEdgeColour)
 					.lineLimit(1)
 					.font(.system(size: pipHeight))
@@ -380,7 +381,7 @@ struct Card : View
 		.clipShape(
 			RoundedRectangle(cornerRadius: cornerRadius)
 		)
-		.frame(width:width,height: height)
+		//.frame(width:width,height: height)
 		.padding(paperBorder)
 		.background(paperColour)
 		.clipShape(
@@ -392,7 +393,7 @@ struct Card : View
 				.stroke(paperEdgeColour, lineWidth: borderWidth)
 		)
 		.offset(x:-depth,y:-depth)
-		
+		.frame(width:width,height: height)
 		
 	}
 }
@@ -410,7 +411,6 @@ struct InteractiveCard : View
 			.onHover
 		{
 			over in
-			print("Hover \(over)")
 			self.z = over ? 10 : 0
 		}
 	}
