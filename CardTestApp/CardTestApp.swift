@@ -7,6 +7,11 @@
 
 import SwiftUI
 
+
+//	always run in edgy dark mode
+let forceColourScheme : ColorScheme? = .light
+
+
 @main
 struct CardTestApp: App
 {
@@ -15,6 +20,7 @@ struct CardTestApp: App
 		WindowGroup
 		{
 			ContentView()
+				.preferredColorScheme(forceColourScheme)
 				.frame(minWidth: 0,minHeight: 0)
 		}
 	}

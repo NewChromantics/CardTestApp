@@ -287,13 +287,13 @@ struct Card : View
 	var paperColour = Color("Paper")
 	var paperEdgeColour = Color.gray //: Color { paperColour }
 	
-	let width = 90.0
+	let width = 80.0
 	let heightRatio = 1.4//1.4 is real card
 	var height : CGFloat {	width * heightRatio	}
 	var cornerRadius : CGFloat { width * 0.09 }
 	var paperBorder : CGFloat { width * 0.05 }
 	var borderWidth : CGFloat { 0.5 }
-	var pipMinWidth : CGFloat { 10 }
+	var pipMinWidth : CGFloat { 8 }
 	var pipWidth : CGFloat { max( pipMinWidth, width * 0.10) }
 	var pipHeight : CGFloat { pipWidth }
 	var shadowSofteness : CGFloat	{ 0.80	}//0..1
@@ -409,6 +409,13 @@ struct InteractiveCard : View
 		Card(cardMeta: cardMeta,z:z)
 			.animation(.interactiveSpring, value: z)
 			.onHover
+		{
+			over in
+			self.z = over ? 10 : 0
+		}
+		.onLongPressGesture(minimumDuration: 1) {
+			print("Long pressed!")
+		} onPressingChanged:
 		{
 			over in
 			self.z = over ? 10 : 0

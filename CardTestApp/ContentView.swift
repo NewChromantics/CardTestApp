@@ -34,12 +34,12 @@ struct ContentView: View
 		let spacing = 5.0
 		VStack(spacing:spacing)
 		{
-			ForEach(0..<7, id:\.self)
+			ForEach(0..<9, id:\.self)
 			{
 				cardRow in
 				HStack(spacing:spacing)
 				{
-					ForEach(0..<25, id:\.self)
+					ForEach(0..<20, id:\.self)
 					{
 						_ in
 						let suit = suits.randomElement() ?? suits[0]
