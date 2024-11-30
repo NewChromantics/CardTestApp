@@ -306,10 +306,15 @@ struct Card : View
 	var innerBorderPadding : CGFloat = 4
 
 	var z : CGFloat = 4
+	var zXMult : CGFloat { 0.2 }
+	var zYMult : CGFloat { 1.0 }
 	var minz = 1.5
 	var depth : CGFloat { max(minz,z)	}
-	var shadowOffset : CGFloat { depth * 1.5 }
-	
+	var shadowOffsetX : CGFloat { depth * 1.5 * zXMult }
+	var shadowOffsetY : CGFloat { depth * 1.5 * zYMult }
+	var posOffsetX : CGFloat { depth * -zXMult }
+	var posOffsetY : CGFloat { depth * -zYMult }
+
 	@ViewBuilder
 	var pipView : some View
 	{
@@ -387,12 +392,12 @@ struct Card : View
 		.clipShape(
 			RoundedRectangle(cornerRadius: cornerRadius)
 		)
-		.shadow(radius: shadowRadius,x:shadowOffset,y:shadowOffset)
+		.shadow(radius: shadowRadius,x:shadowOffsetX,y:shadowOffsetX)
 		.overlay(
 			RoundedRectangle(cornerRadius: cornerRadius)
 				.stroke(paperEdgeColour, lineWidth: borderWidth)
 		)
-		.offset(x:-depth,y:-depth)
+		.offset(x:posOffsetX,y:posOffsetY)
 		.frame(width:width,height: height)
 		
 	}
@@ -427,6 +432,13 @@ struct InteractiveCard : View
 #Preview {
 	let cards = [
 		[
+			CardMeta(value:7,suit: Card.Suit.heart),
+			CardMeta(value:2,suit: Card.Suit.spade),
+		]
+	]
+	/*
+	let cards = [
+		[
 			CardMeta(value:1,suit: "bolt.fill"),
 			CardMeta(value:2,suit: Card.Suit.spade),
 			CardMeta(value:3,suit: Card.Suit.diamond),
@@ -452,6 +464,7 @@ struct InteractiveCard : View
 			CardMeta(value:1,suit: "rainbow"),
 		]
 	]
+	 */
 	
 	let spacing = 5.0
 	VStack(spacing:spacing)
@@ -473,5 +486,6 @@ struct InteractiveCard : View
 	}
 	.padding(50)
 	.background(Color("Felt"))
+	.preferredColorScheme(.light)
 }
 
