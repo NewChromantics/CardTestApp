@@ -207,8 +207,13 @@ extension CardValue : ExpressibleByStringLiteral
 */
 
 
-struct CardMeta : Hashable
+struct CardMeta : Hashable, Transferable, Codable
 {
+	static var transferRepresentation : some TransferRepresentation
+	{
+		CodableRepresentation(contentType:.text)
+	}
+	
 	var value : CardValue
 	var suit : String
 	
@@ -291,16 +296,16 @@ struct Card : View
 	let heightRatio = 1.4//1.4 is real card
 	var height : CGFloat {	width * heightRatio	}
 	var cornerRadius : CGFloat { width * 0.09 }
-	var paperBorder : CGFloat { width * 0.05 }
+	var paperBorder : CGFloat { width * 0.04 }
 	var borderWidth : CGFloat { 0.5 }
 	var pipMinWidth : CGFloat { 8 }
-	var pipWidth : CGFloat { max( pipMinWidth, width * 0.10) }
+	var pipWidth : CGFloat { max( pipMinWidth, width * 0.15) }
 	var pipHeight : CGFloat { pipWidth }
 	var shadowSofteness : CGFloat	{ 0.80	}//0..1
 	var shadowRadius : CGFloat	{ depth / (10.0 * (1.0-shadowSofteness) ) }
 	var shadowSize : CGFloat { depth }
 
-	var innerBorderCornerRadius : CGFloat { width * 0.05 }
+	var innerBorderCornerRadius : CGFloat { width * 0.03 }
 	//var innerBorderColour : Color { Color.blue }
 	var innerBorderColour : Color { Color.clear }
 	var innerBorderPadding : CGFloat = 4
@@ -399,19 +404,33 @@ struct Card : View
 		)
 		.offset(x:posOffsetX,y:posOffsetY)
 		.frame(width:width,height: height)
-		
+
 	}
 }
 
 
 struct InteractiveCard : View
 {
-	var cardMeta : CardMeta
+	@State var cardMeta : CardMeta
 	@State var z : CGFloat = 0
+	
+	//@State var droppingMeta : CardMeta? = nil
+	var droppingMeta : CardMeta?
+	{
+		if ( isDropping )
+		{
+			return CardMeta(value: 1, suit:"arrowshape.down.fill")
+		}
+		return nil
+	}
+	@State var isDropping = false
 
+	
 	var body: some View
 	{
-		Card(cardMeta: cardMeta,z:z)
+		var renderCard = droppingMeta ?? cardMeta
+		Card(cardMeta: renderCard,z:z)
+			//.fixedSize()	//	https://notes.alinpanaitiu.com/How-I-made-my-SwiftUI-calendar-app-3x-faster no real speedup
 			.animation(.interactiveSpring, value: z)
 			.onHover
 		{
@@ -425,18 +444,46 @@ struct InteractiveCard : View
 			over in
 			self.z = over ? 10 : 0
 		}
+		.draggable(cardMeta)
+		{
+			//Spacer()	//	for some reason top is cut off preview
+			Card(cardMeta: cardMeta)
+		}
+		.dropDestination(for: CardMeta.self)
+		{
+			droppingData, location in
+			
+			//	happens if type different to for:
+			if droppingData.isEmpty
+			{
+				return false
+			}
+			//animateDrop(at: location)
+			//process(titles: receivedTitles)
+			//self.cardMeta.suit = droppingData[0]
+			self.cardMeta = droppingData[0]
+			return true
+		}
+		isTargeted:
+		{
+			isDropping = $0
+			//isDropTargeted = $0
+			//return true
+		}
 	}
+	
+	//func process(titles: [String]) { ... }
+	//func animateDrop(at: CGPoint) { ... }
 }
 
 
 #Preview {
-	let cards = [
+	let cards2 = [
 		[
 			CardMeta(value:7,suit: Card.Suit.heart),
 			CardMeta(value:2,suit: Card.Suit.spade),
 		]
 	]
-	/*
 	let cards = [
 		[
 			CardMeta(value:1,suit: "bolt.fill"),
@@ -464,7 +511,7 @@ struct InteractiveCard : View
 			CardMeta(value:1,suit: "rainbow"),
 		]
 	]
-	 */
+	 
 	
 	let spacing = 5.0
 	VStack(spacing:spacing)
