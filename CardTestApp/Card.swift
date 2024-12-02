@@ -262,6 +262,39 @@ extension Card.Suit
 }
 
 
+struct CardStyle
+{
+	var faceUp = true
+	
+	var backing : Color { pipColour }	//	todo: turn into a view or repeating image
+	var pipColour : Color	{	suitColour ?? Color.blue	}
+	var suitColour : Color?
+	var paperColour = Color("Paper")
+	var paperEdgeColour = Color.gray //: Color { paperColour }
+	
+	let width : CGFloat
+	let heightRatio = 1.4//1.4 is real card
+	var height : CGFloat {	width * heightRatio	}
+	var cornerRadius : CGFloat { width * 0.09 }
+	var paperBorder : CGFloat { width * 0.04 }
+	var borderWidth : CGFloat { 0.5 }
+	var pipMinWidth : CGFloat { 8 }
+	var pipWidth : CGFloat { max( pipMinWidth, width * 0.15) }
+	var pipHeight : CGFloat { pipWidth }
+	
+	var innerBorderCornerRadius : CGFloat { width * 0.03 }
+	//var innerBorderColour : Color { Color.blue }
+	var innerBorderColour : Color { Color.clear }
+	var innerBorderPadding : CGFloat = 4
+	
+	init(suit:String?,width:CGFloat)
+	{
+		self.suitColour = Card.Suit.GetDefaultColourFor(suit:suit ?? "")
+		self.width = width
+	}
+
+}
+
 
 struct Card : View
 {
@@ -273,44 +306,18 @@ struct Card : View
 		static let diamond = "suit.diamond.fill"
 	}
 	
-	//var cardMeta : CardMeta	{	CardMeta(value: value, suit: suit)	}
-	//var value : CardValue
-	//var suit : String = Suit.club	//	sf symbol
 	var cardMeta : CardMeta
 	var value : CardValue { cardMeta.value }
-	var suit : String { cardMeta.suit }
-	//var suitSystemImageName : String	{	return "suit.\(suit).fill"	}
+	var suit : String { cardMeta.suit }	//	sf symbol
 	var suitSystemImageName : String	{	return suit	}
 	var pip : Image 	{ Image(systemName:suitSystemImageName)	}
 
-	var faceUp = true
+	var style : CardStyle
+	{
+		return CardStyle(suit: suit, width: 80 )
+	}
 	
-	var backing : Color { suitColour }	//	todo: turn into a view or repeating image
-	var suitColour : Color { customSuitColour ?? defaultSuitColour ?? Color.blue }
-	var customSuitColour : Color?
-	var defaultSuitColour : Color? { Card.Suit.GetDefaultColourFor(suit: suit) }
-	var paperColour = Color("Paper")
-	var paperEdgeColour = Color.gray //: Color { paperColour }
-	
-	let width = 80.0
-	let heightRatio = 1.4//1.4 is real card
-	var height : CGFloat {	width * heightRatio	}
-	var cornerRadius : CGFloat { width * 0.09 }
-	var paperBorder : CGFloat { width * 0.04 }
-	var borderWidth : CGFloat { 0.5 }
-	var pipMinWidth : CGFloat { 8 }
-	var pipWidth : CGFloat { max( pipMinWidth, width * 0.15) }
-	var pipHeight : CGFloat { pipWidth }
-	var shadowSofteness : CGFloat	{ 0.80	}//0..1
-	var shadowRadius : CGFloat	{ depth / (10.0 * (1.0-shadowSofteness) ) }
-	var shadowSize : CGFloat { depth }
-
-	var innerBorderCornerRadius : CGFloat { width * 0.03 }
-	//var innerBorderColour : Color { Color.blue }
-	var innerBorderColour : Color { Color.clear }
-	var innerBorderPadding : CGFloat = 4
-
-	var z : CGFloat = 4
+	var z : CGFloat
 	var zXMult : CGFloat { 0.2 }
 	var zYMult : CGFloat { 1.0 }
 	var minz = 1.5
@@ -319,6 +326,11 @@ struct Card : View
 	var shadowOffsetY : CGFloat { depth * 1.5 * zYMult }
 	var posOffsetX : CGFloat { depth * -zXMult }
 	var posOffsetY : CGFloat { depth * -zYMult }
+	var shadowSofteness : CGFloat	{ 0.80	}//0..1
+	var shadowRadius : CGFloat	{ depth / (10.0 * (1.0-shadowSofteness) ) }
+	var shadowSize : CGFloat { depth }
+
+
 
 	@ViewBuilder
 	var pipView : some View
@@ -329,7 +341,7 @@ struct Card : View
 		pip
 			.resizable()
 			.scaledToFit()
-			.foregroundStyle(suitColour/*, accentColour*/)
+			.foregroundStyle(style.pipColour/*, accentColour*/)
 			.symbolRenderingMode( multiColour ? .multicolor : .monochrome )
 	}
 	
@@ -341,13 +353,13 @@ struct Card : View
 			VStack(alignment:.center, spacing:0)
 			{
 				Text( value.description )
-					.foregroundStyle(suitColour, paperEdgeColour)
+					.foregroundStyle(style.pipColour, style.paperEdgeColour)
 					.lineLimit(1)
-					.font(.system(size: pipHeight))
+					.font(.system(size: style.pipHeight))
 					.fontWeight(.bold)
 
 				pipView
-					.frame(width: pipWidth,height: pipHeight)
+					.frame(width: style.pipWidth,height: style.pipHeight)
 				
 				Spacer()
 			}
@@ -364,16 +376,16 @@ struct Card : View
 		{
 			pipView
 		}
-		.padding(innerBorderPadding)
+		.padding(style.innerBorderPadding)
 		//.background(.green)
 		.frame(maxWidth: .infinity,maxHeight: .infinity)
 		//.background(.yellow)
 		//.border(.blue)
 		.overlay(
-			RoundedRectangle(cornerRadius: innerBorderCornerRadius)
-				.stroke( innerBorderColour, lineWidth: borderWidth)
+			RoundedRectangle(cornerRadius: style.innerBorderCornerRadius)
+				.stroke( style.innerBorderColour, lineWidth: style.borderWidth)
 		)
-		.padding(innerBorderPadding)
+		.padding(style.innerBorderPadding)
 
 	}
 	
@@ -382,28 +394,28 @@ struct Card : View
 		ZStack
 		{
 			ValueView
-				.padding(pipWidth)
+				.padding(style.pipWidth)
 			cornerPipView
 			cornerPipView
 				.rotationEffect(.degrees(180))
 		}
 		//.background(suitColour)
 		.clipShape(
-			RoundedRectangle(cornerRadius: cornerRadius)
+			RoundedRectangle(cornerRadius: style.cornerRadius)
 		)
 		//.frame(width:width,height: height)
-		.padding(paperBorder)
-		.background(paperColour)
+		.padding(style.paperBorder)
+		.background(style.paperColour)
 		.clipShape(
-			RoundedRectangle(cornerRadius: cornerRadius)
+			RoundedRectangle(cornerRadius: style.cornerRadius)
 		)
 		.shadow(radius: shadowRadius,x:shadowOffsetX,y:shadowOffsetX)
 		.overlay(
-			RoundedRectangle(cornerRadius: cornerRadius)
-				.stroke(paperEdgeColour, lineWidth: borderWidth)
+			RoundedRectangle(cornerRadius: style.cornerRadius)
+				.stroke(style.paperEdgeColour, lineWidth: style.borderWidth)
 		)
 		.offset(x:posOffsetX,y:posOffsetY)
-		.frame(width:width,height: height)
+		.frame(width:style.width,height: style.height)
 
 	}
 }
@@ -447,20 +459,17 @@ struct InteractiveCard : View
 		.draggable(cardMeta)
 		{
 			//Spacer()	//	for some reason top is cut off preview
-			Card(cardMeta: cardMeta)
+			Card(cardMeta: cardMeta,z:0)
 		}
 		.dropDestination(for: CardMeta.self)
 		{
-			droppingData, location in
+			droppingData, position in
 			
 			//	happens if type different to for:
 			if droppingData.isEmpty
 			{
 				return false
 			}
-			//animateDrop(at: location)
-			//process(titles: receivedTitles)
-			//self.cardMeta.suit = droppingData[0]
 			self.cardMeta = droppingData[0]
 			return true
 		}
