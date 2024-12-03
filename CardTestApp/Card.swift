@@ -273,6 +273,7 @@ struct CardView : View
 			return .Card
 		}
 	}
+	var isSolidCard : Bool { cardMode != .EmptySlot }
 
 	var suitSystemImageName : String	{	return suit	?? "x.circle" }
 	var pip : Image 	{ Image(systemName:suitSystemImageName)	}
@@ -283,13 +284,13 @@ struct CardView : View
 	var height : CGFloat {	width * heightRatio	}
 	var cornerRadius : CGFloat { width * 0.09 }
 	var paperBorder : CGFloat { width * 0.04 }
-	var borderWidth : CGFloat { cardMode == .EmptySlot ? 4.0 : 0.5 }
+	var paperBackingBorder : CGFloat { width * 0.06 }
 	var pipMinWidth : CGFloat { 8 }
 	var pipWidth : CGFloat { max( pipMinWidth, width * 0.15) }
 	var pipHeight : CGFloat { pipWidth }
 	
 	var innerBorderCornerRadius : CGFloat { width * 0.03 }
-	//var innerBorderColour : Color { Color.blue }
+	//var innerBorderColour : Color { Color.blue }	//	for around queens etc
 	var innerBorderColour : Color { Color.clear }
 	var innerBorderPadding : CGFloat = 4
 
@@ -299,23 +300,29 @@ struct CardView : View
 	var zYMult : CGFloat { 1.0 }
 	var minz = 1.5
 	var depth : CGFloat { max(minz,z)	}
-	var shadowOffsetX : CGFloat { depth * 1.5 * zXMult }
-	var shadowOffsetY : CGFloat { depth * 1.5 * zYMult }
+	var shadowOffsetX : CGFloat { depth * 1.0 * zXMult }
+	var shadowOffsetY : CGFloat { depth * 1.0 * zYMult }
 	var posOffsetX : CGFloat { depth * -zXMult }
 	var posOffsetY : CGFloat { depth * -zYMult }
-	var shadowSofteness : CGFloat	{ 0.80	}//0..1
+	var shadowSofteness : CGFloat	{ 0.30	}//0..1
 	var shadowRadius : CGFloat	{ depth / (10.0 * (1.0-shadowSofteness) ) }
-	var shadowSize : CGFloat { depth }
 
 
 	var backing : some ShapeStyle
 	{
-		return RadialGradient(colors: [.blue,.pink,.yellow], center: .center, startRadius:15, endRadius:50)
+		return LinearGradient(colors: [Color("BackingGradient0"),Color("BackingGradient1"),Color("BackingGradient2"),Color("BackingGradient3")], startPoint: .topLeading, endPoint: .bottomTrailing)//, center: .center, startRadius:15, endRadius:50)
 	}
 	var pipColour : Color	{	suitColour ?? Color.blue	}
 	var paperColour : Color { cardMode == .EmptySlot ? Color.clear : Color("Paper")	}
-	var paperEdgeColour : Color { cardMode == .EmptySlot ? Color.black : Color.gray }
+	var paperEdge = StrokeStyle(lineWidth: 0.5)
+	var paperEdgeColour = Color.gray
+	var emptySlotEdge = StrokeStyle(lineWidth: 1.0, dash: [3,5], dashPhase: 0 )
+	var emptySlotEdgeColour = Color.black
+	
 	var suitColour : Color? { return (suit != nil) ? CardSuit.GetDefaultColourFor(suit:suit!) : nil }
+	
+	var flipRotation : CGFloat {faceUp ? 0 : 180}
+	var flipRotationDuration = 1.0
 
 	
 	@ViewBuilder
@@ -339,7 +346,7 @@ struct CardView : View
 			VStack(alignment:.center, spacing:0)
 			{
 				Text( value?.description ?? "no value" )
-					.foregroundStyle(pipColour, paperEdgeColour)
+					.foregroundStyle(pipColour)
 					.lineLimit(1)
 					.font(.system(size: pipHeight))
 					.fontWeight(.bold)
@@ -367,58 +374,97 @@ struct CardView : View
 		.frame(maxWidth: .infinity,maxHeight: .infinity)
 		//.background(.yellow)
 		//.border(.blue)
+		/*
 		.overlay(
 			RoundedRectangle(cornerRadius: innerBorderCornerRadius)
 				.stroke( innerBorderColour, lineWidth: borderWidth)
 		)
+		 */
 		.padding(innerBorderPadding)
 
 	}
 	
-	var body: some View
+	@ViewBuilder
+	func cardBody() -> some View
 	{
-		ZStack
+		VStack(spacing: 0)
 		{
 			if cardMode == .EmptySlot
 			{
 				Spacer()
 			}
-			else if cardMode == .UnknownCard
+			else
 			{
 				Rectangle()
-					.fill(backing)
-			}
-			else // if faceUp
-			{
-				ValueView
-					.padding(pipWidth)
-				cornerPipView
-				cornerPipView
-					.rotationEffect(.degrees(180))
+				.fill(paperColour)
+				.overlay
+				{
+					var showFace = (flipRotation.animatableData < 90)
+					if !showFace//cardMode == .UnknownCard
+					{
+						RoundedRectangle(cornerRadius: cornerRadius)
+							.fill(backing)
+							.padding(paperBackingBorder)
+					}
+					else // if faceUp
+					{
+						ZStack
+						{
+							ValueView
+								.padding(pipWidth)
+							cornerPipView
+							cornerPipView
+								.rotationEffect(.degrees(180))
+						}
+						.padding(paperBorder)
+					}
+				}
 			}
 		}
+		//.animation(nil)	//	stops lerp between views
+	}
+	
+
+	var body: some View
+	{
+		cardBody()
 		.clipShape(
 			RoundedRectangle(cornerRadius: cornerRadius)
 		)
-		//.frame(width:width,height: height)
-		.padding(paperBorder)
-		.background(paperColour)
+		//.padding(paperBorder)
+		//.background(paperColour)
 		.clipShape(
 			RoundedRectangle(cornerRadius: cornerRadius)
 		)
-		.shadow(radius: shadowRadius,x:shadowOffsetX,y:shadowOffsetX)
-		.overlay(
-			RoundedRectangle(cornerRadius: cornerRadius)
-				.stroke(paperEdgeColour, lineWidth: borderWidth)
-		)
-		.offset(x:posOffsetX,y:posOffsetY)
 		.frame(width:width,height: height)
-		.rotation3DEffect( .degrees(faceUp ? 0 : 180), axis:(x:0,y:1,z:0), perspective:0.1 )
+		.rotation3DEffect( .degrees(flipRotation), axis:(x:0,y:1,z:0), perspective:0.1 )
+		.animation(.interpolatingSpring(duration:flipRotationDuration,bounce:0.3,initialVelocity: 7), value: flipRotation)
+		//	add & depth shadow after rotation otherwise it rotates the offset&shadow
+		.if(isSolidCard)
+		{
+			$0
+				.shadow(radius: shadowRadius,x:shadowOffsetX,y:shadowOffsetY)
+				.overlay(
+					RoundedRectangle(cornerRadius: cornerRadius)
+						.stroke(paperEdgeColour,style:paperEdge)
+				)
+		}
+		.if(!isSolidCard)
+		{
+			$0
+				.overlay(
+					RoundedRectangle(cornerRadius: cornerRadius)
+						.stroke(emptySlotEdgeColour,style: emptySlotEdge)
+				)
+		}
+		.offset(x:posOffsetX,y:posOffsetY)
 
 	}
 }
 
 
+
+//	this is a bit of a demo/test, rather than an actual usable card
 struct InteractiveCard : View
 {
 	@State var cardMeta : CardMeta?
@@ -477,7 +523,6 @@ struct InteractiveCard : View
 				$0
 					.draggable(cardMeta!)
 				{
-					//Spacer()	//	for some reason top is cut off preview
 					CardView(cardMeta: cardMeta,faceUp:faceUp, z:0)
 				}
 				.onHover
