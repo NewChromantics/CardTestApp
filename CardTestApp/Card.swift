@@ -1,4 +1,24 @@
 import SwiftUI
+import Spatial
+
+//	add .if modifier
+extension View {
+	/// Applies the given transform if the given condition evaluates to `true`.
+	/// - Parameters:
+	///   - condition: The condition to evaluate.
+	///   - transform: The transform to apply to the source `View`.
+	/// - Returns: Either the original `View` or the modified `View` if the condition is `true`.
+	@ViewBuilder func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
+		if condition {
+			transform(self)
+		} else {
+			self
+		}
+	}
+}
+
+
+
 
 extension StringProtocol
 {
@@ -96,26 +116,27 @@ struct IconStack<Content: View>: View
 
 
 
-typealias CardValue = Int
+//	rank
+typealias CardRank = Int
 
-extension CardValue
+extension CardRank
 {
-	static let t = CardValue(10)
-	static let jack = CardValue(11)
-	static let queen = CardValue(12)
-	static let king = CardValue(13)
-	static let ace = CardValue(1)
+	static let t = CardRank(10)
+	static let jack = CardRank(11)
+	static let queen = CardRank(12)
+	static let king = CardRank(13)
+	static let ace = CardRank(1)
 }
 
-extension CardValue : ExpressibleByIntegerLiteral
+extension CardRank : ExpressibleByIntegerLiteral
 {
 	init(integerLiteral value: Int) {
-		self = CardValue(value)
+		self = CardRank(value)
 	}
 }
 
 //	we can't use CustomStringConvertible, but we can just override .description
-extension CardValue //: CustomStringConvertible
+extension CardRank //: CustomStringConvertible
 {
 	var description: String
 	{
@@ -130,93 +151,39 @@ extension CardValue //: CustomStringConvertible
 	}
 }
 
-extension CardValue : ExpressibleByStringLiteral
+extension CardRank : ExpressibleByStringLiteral
 {
 	public init(stringLiteral value: String) /*throws*/
 	{
 		switch value
 		{
-			case "T":	self.init(CardValue.t)
-			case "J":	self.init(CardValue.jack)
-			case "Q":	self.init(CardValue.queen)
-			case "K":	self.init(CardValue.king)
-			case "A":	self.init(CardValue.ace)
+			case "T":	self.init(CardRank.t)
+			case "J":	self.init(CardRank.jack)
+			case "Q":	self.init(CardRank.queen)
+			case "K":	self.init(CardRank.king)
+			case "A":	self.init(CardRank.ace)
 			//default:	return nil
 			default:	self = 0
 		}
 	}
 }
 
-/*
-//	card values can be numbers or strings (A,K,Q,J etc)
-enum CardValue : Int, /*RawRepresentable, Equatable, Hashable, CaseIterable, */CustomStringConvertible
-{
-	var description: String	{	String(self.rawValue)	}
-	
-	typealias RawValue = Int
-	
-	//case int(Int)
-	
-case ten = 10
-case jack = 11
-case queen = 12
-case king = 13
-case ace = 1
-	/*
-	//static let ten = CardValue(10)
-	static let jack = CardValue(11)
-	static let queen = CardValue(12)
-	static let king = CardValue(13)
-	static let ace = CardValue(1)
-	
-	static let T = ten
-	static let J = jack
-	static let Q = queen
-	static let K = king
-	static let A = ace
-	
-	var string : String	{	String(self.hashValue)	}
-	
-	static func getValue(_ code:String) -> CardValue
-	{
-		if ( code == "T" )	{	return T	}
-		if ( code == "J" )	{	return J	}
-		if ( code == "Q" )	{	return Q	}
-		if ( code == "K" )	{	return K	}
-		if ( code == "A" )	{	return A	}
-		//throw RuntimeError("Unknown \(code)")
-		return CardValue(-1)
-	}
-	*/
-}
 
-extension CardValue : ExpressibleByIntegerLiteral
+struct CardMeta : Transferable, Codable, /*Identifiable,*/ Hashable
 {
-	init(integerLiteral value: Int) {
-		self = CardValue(rawValue:value)
-	}
-}
-/*
-extension CardValue : ExpressibleByStringLiteral
-{
-	init(stringLiteral value: String) {
-		self = CardValue.getValue(value)
-	}
-}
-*/
-*/
-
-
-struct CardMeta : Hashable, Transferable, Codable
-{
+	//	in case we want 2 cards with the same rank&suit
+	//	dont make the id the rank&suit
+	var id = UUID()
+	
 	static var transferRepresentation : some TransferRepresentation
 	{
 		CodableRepresentation(contentType:.text)
 	}
 	
-	var value : CardValue
+	var value : CardRank
 	var suit : String
-	
+
+
 	//	shorthand for QH (queen heart)
 	init(_ valueAndSuit:String)
 	{
@@ -225,12 +192,12 @@ struct CardMeta : Hashable, Transferable, Codable
 			//throw RuntimeError("CardMeta code needs to be 2 chars Value|Suit")
 		}
 		let v = String(valueAndSuit[0])
-		self.value = CardValue(stringLiteral: v)
+		self.value = CardRank(stringLiteral: v)
 		self.suit = String(valueAndSuit[1])
 	}
 		
 	
-	init(value: CardValue, suit: String)
+	init(value: CardRank, suit: String)
 	{
 		self.value = value
 		self.suit = suit
@@ -238,7 +205,7 @@ struct CardMeta : Hashable, Transferable, Codable
 	
 	init(_ value: Int, _ suit: String)
 	{
-		self.value = CardValue(integerLiteral:value)
+		self.value = CardRank(integerLiteral:value)
 		self.suit = suit
 	}
 }
@@ -249,7 +216,7 @@ typealias UIColor = NSColor
 
 //	add extensions to this...
 //	does it need to be an enum?
-extension Card.Suit
+extension CardSuit
 {
 	static func GetDefaultColourFor(suit:String) -> Color?
 	{
@@ -261,23 +228,62 @@ extension Card.Suit
 	}
 }
 
+class CardSuit
+{
+	static let heart = "suit.heart.fill"
+	static let spade = "suit.spade.fill"
+	static let club = "suit.club.fill"
+	static let diamond = "suit.diamond.fill"
+}
+
+
 
 struct CardStyle
 {
-	var faceUp = true
+
+}
+
+
+
+struct CardView : View
+{
+	var cardMeta : CardMeta?
+	var value : CardRank? { cardMeta?.value }
+	var suit : String? { cardMeta?.suit }	//	sf symbol
+	var faceUp : Bool = true
+
+	enum CardMode
+	{
+		case EmptySlot
+		case UnknownCard
+		case Card
+	}
+	var cardMode : CardMode
+	{
+		if cardMeta == nil
+		{
+			return .EmptySlot
+		}
+		else if !faceUp
+		{
+			return .UnknownCard
+		}
+		else
+		{
+			return .Card
+		}
+	}
+
+	var suitSystemImageName : String	{	return suit	?? "x.circle" }
+	var pip : Image 	{ Image(systemName:suitSystemImageName)	}
 	
-	var backing : Color { pipColour }	//	todo: turn into a view or repeating image
-	var pipColour : Color	{	suitColour ?? Color.blue	}
-	var suitColour : Color?
-	var paperColour = Color("Paper")
-	var paperEdgeColour = Color.gray //: Color { paperColour }
-	
-	let width : CGFloat
+
+	let width : CGFloat = 80	//	in future use geometry reader
 	let heightRatio = 1.4//1.4 is real card
 	var height : CGFloat {	width * heightRatio	}
 	var cornerRadius : CGFloat { width * 0.09 }
 	var paperBorder : CGFloat { width * 0.04 }
-	var borderWidth : CGFloat { 0.5 }
+	var borderWidth : CGFloat { cardMode == .EmptySlot ? 4.0 : 0.5 }
 	var pipMinWidth : CGFloat { 8 }
 	var pipWidth : CGFloat { max( pipMinWidth, width * 0.15) }
 	var pipHeight : CGFloat { pipWidth }
@@ -286,38 +292,9 @@ struct CardStyle
 	//var innerBorderColour : Color { Color.blue }
 	var innerBorderColour : Color { Color.clear }
 	var innerBorderPadding : CGFloat = 4
+
 	
-	init(suit:String?,width:CGFloat)
-	{
-		self.suitColour = Card.Suit.GetDefaultColourFor(suit:suit ?? "")
-		self.width = width
-	}
-
-}
-
-
-struct Card : View
-{
-	class Suit
-	{
-		static let heart = "suit.heart.fill"
-		static let spade = "suit.spade.fill"
-		static let club = "suit.club.fill"
-		static let diamond = "suit.diamond.fill"
-	}
-	
-	var cardMeta : CardMeta
-	var value : CardValue { cardMeta.value }
-	var suit : String { cardMeta.suit }	//	sf symbol
-	var suitSystemImageName : String	{	return suit	}
-	var pip : Image 	{ Image(systemName:suitSystemImageName)	}
-
-	var style : CardStyle
-	{
-		return CardStyle(suit: suit, width: 80 )
-	}
-	
-	var z : CGFloat
+	var z : CGFloat = 0
 	var zXMult : CGFloat { 0.2 }
 	var zYMult : CGFloat { 1.0 }
 	var minz = 1.5
@@ -331,7 +308,16 @@ struct Card : View
 	var shadowSize : CGFloat { depth }
 
 
+	var backing : some ShapeStyle
+	{
+		return RadialGradient(colors: [.blue,.pink,.yellow], center: .center, startRadius:15, endRadius:50)
+	}
+	var pipColour : Color	{	suitColour ?? Color.blue	}
+	var paperColour : Color { cardMode == .EmptySlot ? Color.clear : Color("Paper")	}
+	var paperEdgeColour : Color { cardMode == .EmptySlot ? Color.black : Color.gray }
+	var suitColour : Color? { return (suit != nil) ? CardSuit.GetDefaultColourFor(suit:suit!) : nil }
 
+	
 	@ViewBuilder
 	var pipView : some View
 	{
@@ -341,7 +327,7 @@ struct Card : View
 		pip
 			.resizable()
 			.scaledToFit()
-			.foregroundStyle(style.pipColour/*, accentColour*/)
+			.foregroundStyle(pipColour/*, accentColour*/)
 			.symbolRenderingMode( multiColour ? .multicolor : .monochrome )
 	}
 	
@@ -352,14 +338,14 @@ struct Card : View
 		{
 			VStack(alignment:.center, spacing:0)
 			{
-				Text( value.description )
-					.foregroundStyle(style.pipColour, style.paperEdgeColour)
+				Text( value?.description ?? "no value" )
+					.foregroundStyle(pipColour, paperEdgeColour)
 					.lineLimit(1)
-					.font(.system(size: style.pipHeight))
+					.font(.system(size: pipHeight))
 					.fontWeight(.bold)
 
 				pipView
-					.frame(width: style.pipWidth,height: style.pipHeight)
+					.frame(width: pipWidth,height: pipHeight)
 				
 				Spacer()
 			}
@@ -372,20 +358,20 @@ struct Card : View
 	@ViewBuilder
 	var ValueView : some View
 	{
-		IconStack(iconCount:value)
+		IconStack(iconCount:value ?? 0)
 		{
 			pipView
 		}
-		.padding(style.innerBorderPadding)
+		.padding(innerBorderPadding)
 		//.background(.green)
 		.frame(maxWidth: .infinity,maxHeight: .infinity)
 		//.background(.yellow)
 		//.border(.blue)
 		.overlay(
-			RoundedRectangle(cornerRadius: style.innerBorderCornerRadius)
-				.stroke( style.innerBorderColour, lineWidth: style.borderWidth)
+			RoundedRectangle(cornerRadius: innerBorderCornerRadius)
+				.stroke( innerBorderColour, lineWidth: borderWidth)
 		)
-		.padding(style.innerBorderPadding)
+		.padding(innerBorderPadding)
 
 	}
 	
@@ -393,29 +379,41 @@ struct Card : View
 	{
 		ZStack
 		{
-			ValueView
-				.padding(style.pipWidth)
-			cornerPipView
-			cornerPipView
-				.rotationEffect(.degrees(180))
+			if cardMode == .EmptySlot
+			{
+				Spacer()
+			}
+			else if cardMode == .UnknownCard
+			{
+				Rectangle()
+					.fill(backing)
+			}
+			else // if faceUp
+			{
+				ValueView
+					.padding(pipWidth)
+				cornerPipView
+				cornerPipView
+					.rotationEffect(.degrees(180))
+			}
 		}
-		//.background(suitColour)
 		.clipShape(
-			RoundedRectangle(cornerRadius: style.cornerRadius)
+			RoundedRectangle(cornerRadius: cornerRadius)
 		)
 		//.frame(width:width,height: height)
-		.padding(style.paperBorder)
-		.background(style.paperColour)
+		.padding(paperBorder)
+		.background(paperColour)
 		.clipShape(
-			RoundedRectangle(cornerRadius: style.cornerRadius)
+			RoundedRectangle(cornerRadius: cornerRadius)
 		)
 		.shadow(radius: shadowRadius,x:shadowOffsetX,y:shadowOffsetX)
 		.overlay(
-			RoundedRectangle(cornerRadius: style.cornerRadius)
-				.stroke(style.paperEdgeColour, lineWidth: style.borderWidth)
+			RoundedRectangle(cornerRadius: cornerRadius)
+				.stroke(paperEdgeColour, lineWidth: borderWidth)
 		)
 		.offset(x:posOffsetX,y:posOffsetY)
-		.frame(width:style.width,height: style.height)
+		.frame(width:width,height: height)
+		.rotation3DEffect( .degrees(faceUp ? 0 : 180), axis:(x:0,y:1,z:0), perspective:0.1 )
 
 	}
 }
@@ -423,9 +421,10 @@ struct Card : View
 
 struct InteractiveCard : View
 {
-	@State var cardMeta : CardMeta
+	@State var cardMeta : CardMeta?
 	@State var z : CGFloat = 0
-	
+	@State var faceUp = true
+
 	//@State var droppingMeta : CardMeta? = nil
 	var droppingMeta : CardMeta?
 	{
@@ -440,45 +439,67 @@ struct InteractiveCard : View
 	
 	var body: some View
 	{
+		let draggable = ( cardMeta != nil )
+		let droppable = !draggable
 		var renderCard = droppingMeta ?? cardMeta
-		Card(cardMeta: renderCard,z:z)
+		var up = isDropping ? true : faceUp
+		
+		CardView(cardMeta:renderCard, faceUp:up, z:z )
 			//.fixedSize()	//	https://notes.alinpanaitiu.com/How-I-made-my-SwiftUI-calendar-app-3x-faster no real speedup
 			.animation(.interactiveSpring, value: z)
-			.onHover
-		{
-			over in
-			self.z = over ? 10 : 0
-		}
-		.onLongPressGesture(minimumDuration: 1) {
-			print("Long pressed!")
-		} onPressingChanged:
-		{
-			over in
-			self.z = over ? 10 : 0
-		}
-		.draggable(cardMeta)
-		{
-			//Spacer()	//	for some reason top is cut off preview
-			Card(cardMeta: cardMeta,z:0)
-		}
-		.dropDestination(for: CardMeta.self)
-		{
-			droppingData, position in
-			
-			//	happens if type different to for:
-			if droppingData.isEmpty
+			.if(!draggable)
 			{
-				return false
+				$0.dropDestination(for: CardMeta.self)
+				{
+					droppingData, position in
+					print("dropping data \(position)")
+
+					//	happens if type different to for:
+					if droppingData.isEmpty
+					{
+						return false
+					}
+					self.cardMeta = droppingData[0]
+					//	todo: wipe source
+					//			we cant really access this, which reveals that we want to store the
+					//			layout in seperate state
+					return false
+				}
+				isTargeted:
+				{
+					isDropping = $0
+					//isDropTargeted = $0
+					//return true
+				}
 			}
-			self.cardMeta = droppingData[0]
-			return true
-		}
-		isTargeted:
-		{
-			isDropping = $0
-			//isDropTargeted = $0
-			//return true
-		}
+			.if(draggable)
+			{
+				$0
+					.draggable(cardMeta!)
+				{
+					//Spacer()	//	for some reason top is cut off preview
+					CardView(cardMeta: cardMeta,faceUp:faceUp, z:0)
+				}
+				.onHover
+				{
+					over in
+					self.z = over ? 10 : 0
+				}
+				.onLongPressGesture(minimumDuration: 1)
+				{
+					print("Long pressed!")
+				}
+				onPressingChanged:
+				{
+					over in
+					self.z = over ? 10 : 0
+				}
+				.onTapGesture
+				{
+					self.faceUp = !self.faceUp
+				}
+			}
+		
 	}
 	
 	//func process(titles: [String]) { ... }
@@ -489,35 +510,51 @@ struct InteractiveCard : View
 #Preview {
 	let cards2 = [
 		[
-			CardMeta(value:7,suit: Card.Suit.heart),
-			CardMeta(value:2,suit: Card.Suit.spade),
+			CardMeta(value:7,suit: CardSuit.heart),
+			CardMeta(value:2,suit: CardSuit.spade),
 		]
 	]
 	let cards = [
 		[
 			CardMeta(value:1,suit: "bolt.fill"),
-			CardMeta(value:2,suit: Card.Suit.spade),
-			CardMeta(value:3,suit: Card.Suit.diamond),
+			CardMeta(value:2,suit: CardSuit.spade),
+			nil,
+			CardMeta(value:3,suit: CardSuit.diamond),
 			CardMeta(value:1,suit: "moon.fill"),
+			nil,
 			CardMeta(value:5,suit: "star.fill"),
-			CardMeta(value:6,suit: Card.Suit.club),
+			CardMeta(value:6,suit: CardSuit.club),
 		],
 		[
-			CardMeta(value:7,suit: Card.Suit.club),
+			CardMeta(value:7,suit: CardSuit.club),
+			nil,
 			CardMeta(value:8,suit: "arrowshape.left.fill"),
-			CardMeta(value:9,suit: Card.Suit.heart),
+			CardMeta(value:9,suit: CardSuit.heart),
 			CardMeta(value:.queen,suit: "baseball.fill"),
-			CardMeta(value:.jack,suit: "clipboard.fill"),
+			nil,
+			nil,
 			CardMeta(value:13,suit: "leaf.fill"),
 		//CardMeta("TH")
 		],
 		[
+			nil,
 			CardMeta(value:14,suit: "cloud.drizzle.fill"),
 			CardMeta(value:15,suit: "sun.max.fill"),
 			CardMeta(value:16,suit: "powerplug.portrait.fill"),
 			CardMeta(value:3,suit: "sun.max.fill"),
 			CardMeta(value:20,suit: "rainbow"),
 			CardMeta(value:1,suit: "rainbow"),
+			nil,
+		],
+		[
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil
 		]
 	]
 	 
@@ -525,17 +562,18 @@ struct InteractiveCard : View
 	let spacing = 5.0
 	VStack(spacing:spacing)
 	{
-		ForEach(cards, id:\.self)
+		ForEach(Array(cards.enumerated()), id:\.element)
 		{
-			cardRow in
+			rowIndex,cardRow in
 			HStack(spacing:spacing)
 			{
-				ForEach(cardRow, id:\.self)
+				ForEach(Array(cardRow.enumerated()), id:\.element)
 				{
-					cardValue in
+					colindex,CardRank in
 					let z = Int.random(in: 0...20)
-					//InteractiveCard(cardMeta: cardValue, z:CGFloat(z))
-					InteractiveCard(cardMeta: cardValue)
+					let faceUp = Int.random(in: 0...4) != 0
+					//InteractiveCard(cardMeta: CardRank, z:CGFloat(z))
+					InteractiveCard(cardMeta: CardRank,faceUp:faceUp)
 				}
 			}
 		}

@@ -11,10 +11,10 @@ struct ContentView: View
 {
 	let suits =
 	[
-		Card.Suit.club,
-		Card.Suit.spade,
-		Card.Suit.diamond,
-		Card.Suit.heart,
+		CardSuit.club,
+		CardSuit.spade,
+		CardSuit.diamond,
+		CardSuit.heart,
 		"bolt.fill",
 		"moon.fill",
 		"star.fill",
@@ -42,9 +42,10 @@ struct ContentView: View
 					ForEach(0..<20, id:\.self)
 					{
 						_ in
-						let suit = suits.randomElement() ?? suits[0]
+						var suit : String = suits.randomElement() ?? suits[0]
 						let value = values.randomElement() ?? values[0]
-						let cardValue = CardMeta(value,suit)
+						let null = Int.random(in: 0...4) == 0
+						let cardValue = null ? nil : CardMeta( value, suit )
 						InteractiveCard(cardMeta: cardValue)
 					}
 				}
