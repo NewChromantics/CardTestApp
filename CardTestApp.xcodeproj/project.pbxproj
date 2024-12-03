@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		BF44B2ED2CFF52FC00CD0676 /* Cards in Frameworks */ = {isa = PBXBuildFile; productRef = BF44B2EC2CFF52FC00CD0676 /* Cards */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		BFDA10742CFA3DDE0024C181 /* CardTestApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CardTestApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF44B2ED2CFF52FC00CD0676 /* Cards in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = CardTestApp;
 			packageProductDependencies = (
+				BF44B2EC2CFF52FC00CD0676 /* Cards */,
 			);
 			productName = CardTestApp;
 			productReference = BFDA10742CFA3DDE0024C181 /* CardTestApp.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = BFDA106B2CFA3DDE0024C181;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BF44B2EB2CFF52FC00CD0676 /* XCLocalSwiftPackageReference "Cards.SwiftPackage" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BFDA10752CFA3DDE0024C181 /* Products */;
 			projectDirPath = "";
@@ -339,6 +348,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		BF44B2EB2CFF52FC00CD0676 /* XCLocalSwiftPackageReference "Cards.SwiftPackage" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Cards.SwiftPackage;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BF44B2EC2CFF52FC00CD0676 /* Cards */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Cards;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BFDA106C2CFA3DDE0024C181 /* Project object */;
 }

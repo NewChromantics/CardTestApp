@@ -1,0 +1,3 @@
+[submodule "Cards.SwiftPackage"]
+	path = Cards.SwiftPackage
+	url = https://github.com/NewChromantics/Cards.SwiftPackage.git

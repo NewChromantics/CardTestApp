@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Cards
 
 struct ContentView: View
 {
@@ -47,6 +48,7 @@ struct ContentView: View
 						let null = Int.random(in: 0...4) == 0
 						let cardValue = null ? nil : CardMeta( value, suit )
 						InteractiveCard(cardMeta: cardValue)
+						//CardView(cardMeta:cardValue)
 					}
 				}
 			}
