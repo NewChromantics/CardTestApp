@@ -28,22 +28,22 @@ struct ContentView: View
 		"sun.max.fill",
 		"rainbow",
 	]
-	let values = Array( 0...17 )
+	let values = Array( 0...15 )
 	
 	var body: some View
 	{
 		let spacing = 5.0
 		VStack(spacing:spacing)
 		{
-			ForEach(0..<9, id:\.self)
+			ForEach(0..<7, id:\.self)
 			{
 				cardRow in
 				HStack(spacing:spacing)
 				{
-					ForEach(0..<20, id:\.self)
+					ForEach(0..<14, id:\.self)
 					{
 						_ in
-						var suit : String = suits.randomElement() ?? suits[0]
+						let suit : String = suits.randomElement() ?? suits[0]
 						let value = values.randomElement() ?? values[0]
 						let null = Int.random(in: 0...4) == 0
 						let cardValue = null ? nil : CardMeta( value, suit )
@@ -54,7 +54,6 @@ struct ContentView: View
 			}
 		}
 		.frame(maxWidth: .infinity,maxHeight: .infinity)
-		.padding(50)
 		.background(Color("Felt"))
 	}
 }
